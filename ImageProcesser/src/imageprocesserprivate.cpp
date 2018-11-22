@@ -9,19 +9,25 @@ typedef void (*AlgorithmFunction)(QString source, QString dest);
 
 QEvent::Type ExcutedEvent::m_evType = QEvent::None;
 
+/**
+ * @brief _gray
+ * @note 灰度处理 qGray 采用加权平均值计算灰度
+ * @param source
+ * @param dest
+ */
 static inline void _gray(QString source, QString dest)
 {
     QImage image(source);
 
-    if(image.isNull())
+    if (image.isNull())
     {
         qDebug() << "load " << source << " failed";
         return;
     }
 
-    for(int i = 0;i < image.width(); ++i)
+    for (int i = 0;i < image.width(); ++i)
     {
-        for(int j = 0; j < image.height(); ++j)
+        for (int j = 0; j < image.height(); ++j)
         {
             QRgb pixel_color = image.pixel(i,j);
             int gray = qGray(pixel_color);
@@ -32,19 +38,111 @@ static inline void _gray(QString source, QString dest)
     image.save(dest);
 }
 
+/**
+ * @brief _binarize
+ * @note 黑白处理
+ * @param source
+ * @param dest
+ */
 static inline void _binarize(QString source, QString dest)
 {
+    QImage image(source);
+    if (image.isNull())
+    {
+        qDebug() << "load " << source << "failed";
+        return;
+    }
 
+    int height = image.height();
+    int width = image.width();
+    QRgb black = qRgb(0, 0, 0);
+    QRgb white = qRgb(255, 255, 255);
+
+    for (int i = 0; i < width; ++i)
+    {
+        for (int j = 0; j < height; ++j)
+        {
+            QRgb pixel = image.pixel(i,j);
+            QRgb avg = (qRed(pixel) + qGreen(pixel) + qBlue(pixel))/3;
+
+            image.setPixel(i, j, (avg > 128 ? white : black));
+        }
+    }
+
+    image.save(dest);
 }
 
+/**
+ * @brief _negative
+ * @note 底片式处理
+ * @note 每个像素取255-原像素的RGB颜色
+ * @param source
+ * @param dest
+ */
 static inline void _negative(QString source, QString dest)
 {
+    QImage image(source);
+    if (image.isNull())
+    {
+        qDebug() << "load " << source << "failed";
+        return;
+    }
 
+    int height = image.height();
+    int width = image.width();
+
+    for (int i = 0; i < width; ++i)
+    {
+        for (int j = 0; j < height; ++j)
+        {
+            QRgb pixel = image.pixel(i, j);
+            QRgb negative = qRgba(255 - qRed(pixel),
+                                  255 - qGreen(pixel),
+                                  255 - qBlue(pixel),
+                                  qAlpha(pixel));
+            image.setPixel(i, j, negative);
+        }
+    }
+
+    image.save(dest);
 }
 
+/**
+ * @brief _emboss
+ * @note 浮雕处理
+ * @param source
+ * @param dest
+ */
 static inline void _emboss(QString source, QString dest)
 {
+    QImage image(source);
+    if (image.isNull())
+    {
+        qDebug() << "load " << source << "failed";
+        return;
+    }
 
+    int height = image.height();
+    int width = image.width();
+    QRgb preColor = 0;
+
+    for (int i = 0; i < width; ++i)
+    {
+        for (int j = 0; j < height; ++j)
+        {
+            QRgb color = image.pixel(i, j);
+            int r = qRed(color) - qRed(preColor) + 128;
+            int g = qGreen(color) - qGreen(preColor) + 128;
+            int b = qBlue(color) - qBlue(preColor) + 128;
+            QRgb gray = qGray(r, g, b);
+            QRgb newColor = qRgba(gray, gray, gray, qAlpha(color));
+            image.setPixel(i, j, newColor);
+
+            preColor = color;
+        }
+    }
+
+    image.save(dest);
 }
 
 static inline void _sharpen(QString source, QString dest)
@@ -96,16 +194,21 @@ void ImageProcesserPrivate::process(QString source, ImageProcesser::ImageAlgorit
 
 bool ImageProcesserPrivate::event(QEvent *event)
 {
-    if(event->type() == ExcutedEvent::evType())
+    if (event->type() == ExcutedEvent::evType())
     {
         ExcutedEvent *e = (ExcutedEvent *)event;
 
-        if(m_runables.contains(e->m_runable))
+        if (m_runables.contains(e->m_runable))
         {
             Q_Q(ImageProcesser);
             m_notifySourcePath = e->m_runable->m_sourceFilePath;
             m_notifyAlgorithum = e->m_runable->m_algorithm;
-            emit q->finished(e->m_runable->m_destFilePath);
+
+            QFile file(e->m_runable->m_destFilePath);
+            if(file.exists())
+                emit q->finished(e->m_runable->m_destFilePath);
+            else
+                emit q->finished("");
             m_runables.removeOne(e->m_runable);
         }
 

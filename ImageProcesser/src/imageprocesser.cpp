@@ -34,9 +34,9 @@ void ImageProcesser::abort(QString file, ImageProcesser::ImageAlgorithm algorith
 
     int size = d->m_runables.length();
 
-    for(int i = 0;i < size; ++i)
+    for (int i = 0;i < size; ++i)
     {
-        if(d->m_runables.at(i)->m_sourceFilePath == file
+        if (d->m_runables.at(i)->m_sourceFilePath == file
                 && d->m_runables.at(i)->m_algorithm)
         {
             d->m_runables.removeAt(i);

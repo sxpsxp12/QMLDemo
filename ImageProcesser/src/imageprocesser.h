@@ -26,16 +26,15 @@ public:
 
     QString sourceFile();
 
+    Q_INVOKABLE void process(QString file, ImageAlgorithm algorithm);
+
+    Q_INVOKABLE void abort(QString file, ImageAlgorithm algorithm);
+
 Q_SIGNALS:
     void finished(QString newFile);
 
     void progress(int value);
 
-public Q_SLOTS:
-
-    void process(QString file, ImageAlgorithm algorithm);
-
-    void abort(QString file, ImageAlgorithm algorithm);
 private:
     ImageProcesserPrivate *d_ptr;
 
