@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>FlatButton.qml</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>icons/ic_archive.png</file>
+        <file>icons/ic_back.png</file>
+        <file>icons/ic_backward.png</file>
+        <file>icons/ic_close_clear_cancel.png</file>
+        <file>icons/ic_find.png</file>
+        <file>icons/ic_forward.png</file>
+        <file>icons/ic_info_details.png</file>
+        <file>icons/ic_rotate_left.png</file>
+        <file>icons/ic_rotate_right.png</file>
+        <file>icons/ic_search.png</file>
+        <file>icons/ic_zoomin.png</file>
+        <file>icons/ic_zoomout.png</file>
+        <file>icons/zoomin.tsp</file>
+    </qresource>
+</RCC>
